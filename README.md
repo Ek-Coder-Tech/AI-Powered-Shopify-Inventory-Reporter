@@ -1,4 +1,4 @@
-# 🧠 AI-Powered Shopify Inventory Reporter
+# 🧠 Shopify Inventory Automation with AI & n8n Integration
 
 Automated workflow that fetches product data from Shopify, analyzes stock levels using AI, and sends smart inventory summaries to Slack and Email — all orchestrated through **n8n** and **Google Sheets**.
 
