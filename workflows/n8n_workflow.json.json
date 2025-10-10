@@ -1,0 +1,593 @@
+{
+  "name": "AI-Powered Inventory Report",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get AI text from the OpenAI node\nconst aiText = $json?.message?.content || \"No summary generated.\";\n\n// Construct message for Slack or Email\nconst formattedMessage = `\n🚀 *AI Inventory Summary Report*\n\n${aiText}\n`;\n\nreturn [\n  {\n    json: {\n      message: formattedMessage\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        304
+      ],
+      "id": "68d130bb-90f4-4e2f-91ef-155a71420d99",
+      "name": "Format Slack Message"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        -96
+      ],
+      "id": "38cb036b-ba44-42fd-9ca6-17b368d8fb89",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Flatten Shopify Products for Google Sheet ---\n// Get all incoming Shopify product items\nconst products = $input.all();\nconst output = [];\n\nfor (const item of products) {\n  const p = item.json;\n  const variants = Array.isArray(p.variants) ? p.variants : [];\n\n  for (const v of variants) {\n    output.push({\n      json: {\n        product_id: p.id || \"\",\n        variant_id: v.id || \"\",\n        title: p.title?.trim() || \"Untitled Product\",\n        variant_title: v.title?.trim() || \"Default Title\",\n        sku: v.sku?.trim() || \"N/A\",\n        price: parseFloat(v.price || 0).toFixed(2),\n        inventory_quantity: v.inventory_quantity ?? 0,\n        created_at: p.created_at || \"\",\n        updated_at: p.updated_at || \"\",\n        handle: p.handle || \"\",\n        product_url: `https://diy-tools-hub-demo.myshopify.com/products/${p.handle}`,\n        vendor: p.vendor || \"Unknown\",\n        product_type: p.product_type || \"Uncategorized\",\n        tags: p.tags || \"\",\n        last_synced: new Date().toISOString(),   // automatically adds a sync timestamp\n      }\n    });\n  }\n}\n\n// Add a safety check in case no products were found\nif (output.length === 0) {\n  return [\n    {\n      json: {\n        warning: \"No products or variants found in Shopify data.\",\n        timestamp: new Date().toISOString()\n      }\n    }\n  ];\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        352
+      ],
+      "id": "ef0ffda6-be9c-45fa-8956-bd40e53d7149",
+      "name": "Flatten Data"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY",
+          "mode": "list",
+          "cachedResultName": "Shopify_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2941687,
+          "mode": "list",
+          "cachedResultName": "Inventory_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY/edit#gid=2941687"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id ": "={{$json[\"product_id\"]}}",
+            "variant_id ": "={{$json[\"variant_id\"]}}",
+            "title": "={{$json[\"title\"]}}",
+            "variant_title": "={{$json[\"variant_title\"]}}",
+            "sku": "={{$json[\"sku\"]}}",
+            "price": "={{$json[\"price\"]}}",
+            "inventory_quantity": "={{$json[\"inventory_quantity\"]}}",
+            "created_at": "={{$json[\"created_at\"]}}",
+            "updated_at": "={{$json[\"updated_at\"]}}",
+            "handle": "={{$json[\"handle\"]}}",
+            "product_url": "={{$json[\"product_url\"]}}",
+            "vendor": "={{$json[\"vendor\"]}}",
+            "product_type": "={{$json[\"product_type\"]}}",
+            "tags": "={{$json[\"tags\"]}}",
+            "last_synced": "={{$json[\"last_synced\"]}}"
+          },
+          "matchingColumns": [
+            "product_id "
+          ],
+          "schema": [
+            {
+              "id": "product_id ",
+              "displayName": "product_id ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "variant_id ",
+              "displayName": "variant_id ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "variant_title",
+              "displayName": "variant_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "inventory_quantity",
+              "displayName": "inventory_quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "handle",
+              "displayName": "handle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_url",
+              "displayName": "product_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "vendor",
+              "displayName": "vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_type",
+              "displayName": "product_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_synced",
+              "displayName": "last_synced",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -528,
+        -48
+      ],
+      "id": "cd42d75e-a837-42de-8832-47f41f86cac2",
+      "name": "Update Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ELbnJ2fpYMlWOoPg",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "product",
+        "operation": "getAll",
+        "limit": 20,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        128
+      ],
+      "id": "c25b8021-6cca-43e1-b047-c0d22cde52a9",
+      "name": "Fetch Products",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "MdF5BYYRroYVqubW",
+          "name": "Shopify Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY",
+          "mode": "list",
+          "cachedResultName": "Shopify_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Settings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jj5r7rHVVK-Rs7orEmOGw3buY0jkU5su2EeKVuXt5hY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        -48
+      ],
+      "id": "a10f5576-ed6f-4e39-a810-9ded323db5d3",
+      "name": "Load Settings",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ELbnJ2fpYMlWOoPg",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code → Parse Settings\n// Converts Google Sheets Key/Value rows into a single settings object\n\nconst rows = $input.all();\nconst settings = {};\n\nfor (const row of rows) {\n  const data = row.json || {};\n  // Some Google Sheets outputs use \"Key\"/\"Value\", others \"key\"/\"value\"\n  const keyRaw = data.Key ?? data.key ?? data.key_name ?? null;\n  const valRaw = data.Value ?? data.value ?? data.val ?? null;\n  const key = keyRaw ? String(keyRaw).trim() : null;\n  const value = valRaw ? String(valRaw).trim() : null;\n\n  if (key && value && key !== \"-----\") {\n    settings[key.toLowerCase()] = value; // store keys lowercase for predictable access\n  }\n}\n\nreturn [{ json: settings }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -48
+      ],
+      "id": "89ace686-011f-46ce-9220-50d6f22f929f",
+      "name": "Parse Settings"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inventory Intelligence Engine (reads Settings from Code → Parse Settings)\n\n// ---------- Read settings ----------\nconst parsedSettings = $items(\"Parse Settings\")?.[0]?.json || {};\nconst rawMode = (parsedSettings.mode || \"category\").toString().toLowerCase();\nconst thresholdMode = rawMode === \"average\" ? \"average\" : \"category\"; // only two allowed\nconst includeInvalid = (parsedSettings.include_invalid || \"no\").toString().toLowerCase() === \"yes\";\nconst summaryLimit = parseInt(parsedSettings.summary_limit || \"10\", 10) || 10;\nconst sendAlerts = (parsedSettings.send_alerts || \"no\").toString().toLowerCase() === \"yes\";\n\n// ---------- Category thresholds (defaults, tweakable) ----------\nconst thresholdsByType = {\n  \"Power Tools\": { low: 5, high: 80 },\n  \"Hand Tools\": { low: 10, high: 150 },\n  \"Electrical\": { low: 8, high: 100 },\n  \"Safety Gear\": { low: 5, high: 120 },\n  \"Accessories\": { low: 15, high: 200 },\n};\n\n// ---------- Collect data from Inventory sheet node ----------\nconst sheetItems = $items(\"Update Sheet\"); \nif (!sheetItems || sheetItems.length === 0) {\n  throw new Error(\"No inventory rows found from Google Sheets → Update Inventory Sheet1\");\n}\n\nconst products = sheetItems\n  .map(i => {\n    const j = i.json || {};\n    return {\n      title: j.title || \"Unknown\",\n      variant_title: j.variant_title || \"Default Title\",\n      sku: j.sku || \"N/A\",\n      price: Number(j.price) || 0,\n      inventory_quantity: j.inventory_quantity === \"\" || j.inventory_quantity == null ? null : Number(j.inventory_quantity),\n      product_url: j.product_url || \"\",\n      vendor: j.vendor || \"Unknown\",\n      product_type: j.product_type || \"Unknown\",\n      tags: j.tags || \"\",\n    };\n  })\n  // filter out clearly empty rows (if any)\n  .filter(p => p.title && p.title !== \"Unknown\");\n\n// ---------- Compute average thresholds if needed ----------\nconst totalInventory = products.reduce((s, p) => s + (isNaN(p.inventory_quantity) || p.inventory_quantity == null ? 0 : p.inventory_quantity), 0);\nconst totalProducts = products.length || 1;\nconst avgStock = totalInventory / totalProducts;\nconst avgLowThreshold = avgStock * 0.1;\nconst avgOverThreshold = avgStock * 2;\n\n// ---------- Helper ----------\nfunction getCategoryThresholds(product) {\n  const type = (product.product_type || \"\").trim();\n  return thresholdsByType[type] || { low: 10, high: 100 };\n}\n\n// ---------- Analyze ----------\nconst lowStockFull = [];\nconst overStockFull = [];\nconst invalidItemsFull = [];\n\nfor (const p of products) {\n  const qty = p.inventory_quantity;\n  const thresholds = thresholdMode === \"category\" ? getCategoryThresholds(p) : { low: avgLowThreshold, high: avgOverThreshold };\n\n  if (qty === null || isNaN(qty)) {\n    invalidItemsFull.push(p.title);\n    continue;\n  }\n  if (qty <= thresholds.low) lowStockFull.push(`${p.title} (${qty})`);\n  else if (qty >= thresholds.high) overStockFull.push(`${p.title} (${qty})`);\n}\n\n// ---------- Apply summary limits and optionally include invalids ----------\nconst lowStock = lowStockFull.slice(0, summaryLimit);\nconst overStock = overStockFull.slice(0, summaryLimit);\nconst invalidItems = includeInvalid ? invalidItemsFull.slice(0, summaryLimit) : [];\n\n// ---------- Health ----------\nlet inventoryHealth = \"Stable\";\nif (lowStockFull.length > 0 && overStockFull.length > 0) inventoryHealth = \"Mixed – both low and overstock detected.\";\nelse if (lowStockFull.length > 0) inventoryHealth = \"Low Stock Alert\";\nelse if (overStockFull.length > 0) inventoryHealth = \"Overstock Alert\";\n\n// ---------- Return single structured item for downstream AI ----------\nreturn [\n  {\n    json: {\n      configUsed: {\n        thresholdMode,\n        includeInvalid,\n        summaryLimit,\n        sendAlerts,\n        rawSettings: parsedSettings\n      },\n      products, // full array\n      summaryObj: {\n        modeUsed: thresholdMode,\n        avgStock,\n        totalProducts,\n        totalInventory,\n        lowStockFull,     // full lists for audit/log\n        overStockFull,\n        invalidItemsFull,\n        lowStock,         // limited lists for report\n        overStock,\n        invalidItems,\n        inventoryHealth,\n        generatedAt: new Date().toISOString()\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        208
+      ],
+      "id": "7adafb57-62bd-4f49-ad5d-3193d82bb6ea",
+      "name": "Inventory Engine"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract data directly from the previous node's output\nconst products = $json.products;\nconst summary = $json.summaryObj || {};\n\nif (!Array.isArray(products)) {\n  throw new Error(\"Expected 'products' to be an array from the Inventory Intelligence Engine output.\");\n}\n\nconst lowStock = [];\nconst overStock = [];\nconst invalid = [];\n\nfor (const p of products) {\n  const qty = p.inventory_quantity;\n  if (qty == null || isNaN(qty)) invalid.push(p.title);\n  else if (qty < 10) lowStock.push(`${p.title} (${qty})`);\n  else if (qty > 100) overStock.push(`${p.title} (${qty})`);\n}\n\nconst summaryObj = {\n  ...summary, // include what was already computed\n  lowStock,\n  overStock,\n  invalid,\n  inventoryHealth: summary.inventoryHealth || \n    `Stable | ${lowStock.length + invalid.length} items need attention`\n};\n\n// Return a clean object for AI phrasing or summary\nreturn [{ json: { summaryObj, products } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        208
+      ],
+      "id": "bdf61bdc-e397-4d5c-ae3b-003033d8dfda",
+      "name": "Prepare JSON for AI"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-4-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an e-commerce inventory assistant. You MUST ONLY use the JSON object provided. \nDo NOT invent or assume products not listed. Produce ONE concise paragraph (<80 words) using the data exactly as given.\nFocus on clarity, brevity, and factual correctness.\n",
+              "role": "system"
+            },
+            {
+              "content": "=Use this JSON object to write a single professional paragraph:\n\n{{ JSON.stringify($json[\"summaryObj\"]) }}\n\nInclude the following:\n\n- lowStock: products with inventory below 10 units\n- overStock: products with inventory above 100 units\n- invalidItems: products missing or with invalid stock\n\nEnd with the inventoryHealth line provided in the JSON. \nDo NOT invent or add any products. Keep the paragraph under 80 words.\n"
+            }
+          ]
+        },
+        "options": {
+          "frequency_penalty": 0,
+          "maxTokens": 200,
+          "n": 1,
+          "presence_penalty": 0,
+          "temperature": 0,
+          "topP": 1,
+          "maxToolsIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -144,
+        208
+      ],
+      "id": "75b5e746-bf06-4785-9add-f52a6cfc15ca",
+      "name": "AI Report",
+      "credentials": {
+        "openAiApi": {
+          "id": "zcXoeoboXR6qdtBi",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Pull data from the AI response node ---\nconst aiReport = $json[\"message\"]?.[\"content\"] || \"No report content available.\";\n\n// --- Optional: Get timestamp for readability ---\nconst now = new Date().toLocaleString(\"en-US\", { timeZone: \"Africa/Nairobi\" });\n\n// --- Construct the HTML email body ---\nconst emailHTML = `\n<html>\n  <body style=\"font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px; color: #333;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width: 700px; margin: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);\">\n      <tr>\n        <td style=\"padding: 20px 30px; background-color: #1a73e8; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px;\">\n          <h2 style=\"margin: 0;\">🧠 AI Inventory Summary Report</h2>\n          <p style=\"margin: 0;\">Generated on ${now}</p>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding: 30px;\">\n          <p style=\"font-size: 15px; line-height: 1.6;\">${aiReport.replace(/\\n/g, \"<br>\")}</p>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding: 15px 30px; text-align: center; background-color: #f1f3f4; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; font-size: 13px; color: #555;\">\n          <p>🤖 Automated by <strong>n8n + OpenAI + Shopify API</strong></p>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>\n`;\n\nreturn [\n  {\n    json: {\n      subject: \"🧠 AI Inventory Summary Report\",\n      emailBody: emailHTML\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        112
+      ],
+      "id": "44a5b9d2-ce00-4583-a561-8d18ad60b1ee",
+      "name": "Format Email Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "eric.kyalo2014@gmail.com",
+        "subject": "={{ $json[\"subject\"] }}",
+        "message": "={{ $json[\"emailBody\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        112
+      ],
+      "id": "4b8637de-3285-4fad-9738-1e1e99a88b77",
+      "name": "Send Email",
+      "webhookId": "75530c7e-ac7d-4fb1-bd7e-35c7e27ba80d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "O7oTWQL434BTmR3N",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09L2M8F3H7",
+          "mode": "list",
+          "cachedResultName": "inventory-tracking"
+        },
+        "text": "={{ $json[\"message\"] }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        304
+      ],
+      "id": "b918c690-0e95-458c-8f92-4a816f68d691",
+      "name": "Send Slack",
+      "webhookId": "945ff94d-4833-4be6-8fa8-9241c4bbcfcb",
+      "credentials": {
+        "slackApi": {
+          "id": "fKyv9W0hJKqPfUjz",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Format Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Send Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Data": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet": {
+      "main": [
+        [
+          {
+            "node": "Load Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Products": {
+      "main": [
+        [
+          {
+            "node": "Flatten Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Settings": {
+      "main": [
+        [
+          {
+            "node": "Parse Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Settings": {
+      "main": [
+        [
+          {
+            "node": "Inventory Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory Engine": {
+      "main": [
+        [
+          {
+            "node": "Prepare JSON for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare JSON for AI": {
+      "main": [
+        [
+          {
+            "node": "AI Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Report": {
+      "main": [
+        [
+          {
+            "node": "Format Slack Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Email Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email Report": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e6b4d4eb-33aa-45ba-84f1-1ea912a61336",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d271acf79c9698fa643aa64abeddf51e0731d565106fb03bde810cdd8e0dda08"
+  },
+  "id": "nr78cwLiml4exikz",
+  "tags": []
+}
