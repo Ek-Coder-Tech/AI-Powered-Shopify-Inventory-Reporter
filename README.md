@@ -133,9 +133,9 @@ cd AI-Powered-Shopify-Inventory-Reporter
 ## 🖼️ Visual Overview
 | Stage        | Example                                     |
 | ------------ | ------------------------------------------- |
-| n8n Workflow | ![Workflow](assets/workflow_screenshot.png) |
-| Slack Report | ![Slack](assets/ai_report_slack_sample.png) |
-| Email Report | ![Email](assets/ai_report_email_sample.png) |
+| n8n Workflow | ![Workflow](assets/workflow_screenshot.PNG) |
+| Slack Report | ![Slack](assets/ai_report_slack_sample.PNG) |
+| Email Report | ![Email](assets/ai_report_email_sample.PNG) |
 
 ---
 
