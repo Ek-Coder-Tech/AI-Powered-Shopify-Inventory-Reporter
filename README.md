@@ -31,7 +31,6 @@ Reads configuration parameters (e.g., alert mode, stock thresholds) from your `S
 
 ### 🧠 6. Code → Parse Settings
 Converts key-value rows into a structured JSON object:
-```json
 {
   "mode": "category",
   "send_alerts": "yes",
