@@ -141,10 +141,15 @@ cd AI-Powered-Shopify-Inventory-Reporter
 
 ## 🪄 Features
 ✅ Automated daily inventory analysis
+
 🧠 AI-enhanced reporting with human-readable summaries
+
 📊 Real-time data sync with Google Sheets
+
 💬 Team notifications via Slack
+
 📧 Email reports for management visibility
+
 🔒 Secure OAuth connections for all integrations
 
 ---
