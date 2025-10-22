@@ -174,5 +174,6 @@ Full-Stack Developer | E-commerce & Automation | Python, Shopify, APIs Freelance
 
 ---
 
-## 📬 Contact
-For freelance inquiries, please reach out via [Upwork Profile](https://www.upwork.com/freelancers/~012558bab6232e8e65)
+### 🔗 Related Project
+Check out my **Lead Capture Automation (n8n + Gmail + Google Sheets)** workflow here:
+👉 [GitHub Repository](https://github.com/yourusername/lead-capture-automation)
