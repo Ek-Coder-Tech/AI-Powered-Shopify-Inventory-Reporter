@@ -171,9 +171,3 @@ This project is licensed under the MIT License — see the LICENSE file for deta
 **Eric M.**  
 Full-Stack Developer | E-commerce & Automation | Python, Shopify, APIs Freelancer  
 [View My GitHub Projects](https://github.com/Ek-Coder-Tech)
-
----
-
-### 🔗 Related Project
-Check out my **Lead Capture Automation (n8n + Gmail + Google Sheets)** workflow here:
-👉 [GitHub Repository](https://github.com/yourusername/lead-capture-automation)
